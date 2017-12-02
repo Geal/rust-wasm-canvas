@@ -106,9 +106,16 @@ fetch("rust.wasm").then(response =>
       if (progress > 100) {
         module.fill(pointer, width*height, timestamp);
 
-        ctx.putImageData(img, 0, 0)
         start = timestamp
+
+        window.requestAnimationFrame(draw);
+      } else {
+        window.requestAnimationFrame(step);
       }
+    }
+
+    function draw() {
+      ctx.putImageData(img, 0, 0)
       window.requestAnimationFrame(step);
     }
 
