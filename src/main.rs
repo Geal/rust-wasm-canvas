@@ -59,6 +59,13 @@ pub fn fill(pointer: *mut u8, length: usize, time: f64) {
       let nb = time  + len / 4.0;
       let a = 128.0 + nb.cos() * 128.0;
       sl[i] = a as u8;
+
+    } else if i %2 == 0 {
+      let width = 500 - width;
+      let len = ((height*height + width*width) as f64).sqrt();
+      let nb = time  + len / 4.0;
+      let a = 128.0 + nb.cos() * 128.0;
+      sl[i] = a as u8;
     }
   }
 }
