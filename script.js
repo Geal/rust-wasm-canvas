@@ -97,17 +97,6 @@ fetch("rust.wasm").then(response =>
     ctx.putImageData(image, 0, 0)
     console.log("put image data")
 
-
-    var canvas2 = document.getElementById('screenLarge');
-
-    if (canvas2.getContext) {
-      var ctx2 = canvas2.getContext('2d');
-      ctx2.scale(canvas2_width/width, canvas2_height/height);
-      ctx2.drawImage(canvas, 0, 0);
-    }
-    console.log("enlarged")
-    //free(buffer)
-
     var start = null;
     function step(timestamp) {
       var progress;
@@ -120,7 +109,6 @@ fetch("rust.wasm").then(response =>
         data.set(usub);
 
         ctx.putImageData(image, 0, 0)
-        ctx2.drawImage(canvas, 0, 0);
         start = timestamp
       }
       window.requestAnimationFrame(step);
