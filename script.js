@@ -60,21 +60,15 @@ fetch("rust.wasm").then(response =>
   module.dealloc = mod.exports.dealloc;
   module.fill    = mod.exports.fill;
 
-  var width = 50;
-  var height = 50;
+  var width  = 500;
+  var height = 500;
+  var canvas2_width = 500;
+  var canvas2_height = 500;
   let byteSize = width * height * 4;
   var pointer = module.alloc( byteSize );
   var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
 
-  console.log("pointer: "+pointer);
-  console.log("before set");
-  console.log(buffer);
 
-  module.set_buffer(pointer);
-  console.log("after set");
-  console.log(buffer);
-
-  module.dealloc(pointer);
 
 
   console.log(module);
@@ -109,7 +103,7 @@ fetch("rust.wasm").then(response =>
 
     if (canvas2.getContext) {
       var ctx2 = canvas2.getContext('2d');
-      ctx2.scale(500/50, 500/50);
+      ctx2.scale(canvas2_width/width, canvas2_height/height);
       ctx2.drawImage(canvas, 0, 0);
     }
     console.log("enlarged")
@@ -120,12 +114,10 @@ fetch("rust.wasm").then(response =>
       var progress;
       if (start === null) start = timestamp;
       progress = timestamp - start;
-      if (progress > 100) {
-        console.log(timestamp);
-        module.fill(pointer, width*height, timestamp / 100);
+      if (progress > 10) {
+        module.fill(pointer, width*height, timestamp);
 
         var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
-        console.log(usub);
         data.set(usub);
 
         ctx.putImageData(image, 0, 0)
