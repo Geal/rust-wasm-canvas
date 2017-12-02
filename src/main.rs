@@ -28,6 +28,16 @@ impl Pixel {
   }
 }
 
+fn mycos(mut x:f64) -> f64 {
+  x = x - (x/3.14159265).trunc() * 3.14159265;
+
+  if x < 0f64 {
+    1.27323954 * x + 0.405284735 * x * x
+  } else {
+    1.27323954 * x - 0.405284735 * x * x
+  }
+}
+
 #[no_mangle]
 pub extern "C" fn alloc(size: usize) -> *mut u8 {
   unsafe {
@@ -56,15 +66,15 @@ pub fn fill(pointer: *mut u8, length: usize, time: f64) {
       sl[i] = 255;
     } else if i%4 == 0 {
       let len = ((height*height + width*width) as f64).sqrt();
-      let nb = time  + len / 4.0;
-      let a = 128.0 + nb.cos() * 128.0;
+      let nb = time  + len / 12.0;
+      let a = 128.0 + mycos(nb) * 128.0;
       sl[i] = a as u8;
 
     } else if i %2 == 0 {
       let width = 500 - width;
       let len = ((height*height + width*width) as f64).sqrt();
-      let nb = time  + len / 4.0;
-      let a = 128.0 + nb.cos() * 128.0;
+      let nb = time  + len / 12.0;
+      let a = 128.0 + mycos(nb) * 128.0;
       sl[i] = a as u8;
     }
   }
