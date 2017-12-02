@@ -48,7 +48,7 @@
 fetch("rust.wasm").then(response =>
   response.arrayBuffer()
 ).then(bytes =>
-  WebAssembly.instantiate(bytes, { env: { } })
+  WebAssembly.instantiate(bytes, { env: { cos: Math.cos } })
 ).then(results => {
   console.log("got instance");
   console.log(results);
@@ -78,7 +78,6 @@ fetch("rust.wasm").then(response =>
 
     var pointer = module.alloc( byteSize );
     var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
-    console.log("allocated buffer: "+buffer);
 
     image = ctx.getImageData(0, 0, width, height)
     data = image.data

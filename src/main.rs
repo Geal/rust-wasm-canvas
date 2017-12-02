@@ -49,23 +49,16 @@ pub fn fill(pointer: *mut u8, length: usize, time: f64) {
   let mut sl = unsafe { slice::from_raw_parts_mut(pointer, length * 4) };
 
   for i in 0..length*4 {
+    let height = i / 4 / 500;
+    let width  = i / 4 % 500;
+
     if i%4 == 3 {
       sl[i] = 255;
     } else if i%4 == 0 {
-      //sl[i] = 255;
-
-      //let nb = ((i % 4) as f64) * (time + (i as f64));
-      let height = (i-i%4) / 50;
-      let width  = (i-i%4) % 50;
       let len = ((height*height + width*width) as f64).sqrt();
-      /*let nb = time + len;
-      //sl[i] = (nb.cos() * 255.0) as u8;
-      sl[i] = (nb  255.0) as u8;
-      */
-
-      let nb = (time + len) as usize;
-      //sl[i] = (nb.cos() * 255.0) as u8;
-      sl[i] = (nb % 256) as u8;
+      let nb = time  + len / 4.0;
+      let a = 128.0 + nb.cos() * 128.0;
+      sl[i] = a as u8;
     }
   }
 }
