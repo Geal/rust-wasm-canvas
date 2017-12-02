@@ -102,7 +102,7 @@ fetch("rust.wasm").then(response =>
       var progress;
       if (start === null) start = timestamp;
       progress = timestamp - start;
-      if (progress > 10) {
+      if (progress > 100) {
         module.fill(pointer, width*height, timestamp);
 
         var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
