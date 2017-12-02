@@ -1,11 +1,58 @@
+/*
+  function imports() {
+    const res = resources();
+    var ctx = canvas.getContext("2d");
+    function clear_screen() {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    function draw_player(x, y, angle) {
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.translate(0, -8);
+      ctx.drawImage(res.player, 0, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = "black";
+      //ctx.fillRect(x - 17, y - 12, 4, 4);
+    }
+    function draw_enemy(x, y) {
+      ctx.drawImage(res.enemy, x - 10, y - 10);
+    }
+    function draw_bullet(x, y) {
+      ctx.drawImage(res.bullet, x - 3, y - 3);
+    }
+    function draw_particle(x, y, radius) {
+      ctx.drawImage(res.particle, x - radius, y - radius, 2 * radius, 2 * radius);
+    }
+    function draw_score(x) {
+      ctx.fillStyle = "orange";
+      ctx.textBaseline = "top";
+      ctx.font = "20px sans-serif";
+      ctx.fillText('Score: ' + x, 10, 10)
+    }
+// The real loading and running of our wasm starts here
+    let imports = { clear_screen, draw_player, draw_enemy, draw_bullet, draw_particle, draw_score };
+    imports.Math_atan = Math.atan;
+    imports.sin = Math.sin;
+    imports.cos = Math.cos;
+    return imports;
+  }
+  */
+
+
+
+
+
+
 // Fetch and instantiate our wasm module
 fetch("rust.wasm").then(response =>
   response.arrayBuffer()
 ).then(bytes =>
-  WebAssembly.instantiate(bytes, { env: {} })
+  WebAssembly.instantiate(bytes, { env: { } })
 ).then(results => {
   console.log("got instance");
   console.log(results);
+  console.log(results.instance.exports);
   let module = {};
   let mod = results.instance;
   module.update  = mod.exports.update;
@@ -13,30 +60,45 @@ fetch("rust.wasm").then(response =>
   module.dealloc = mod.exports.dealloc;
   module.fill    = mod.exports.fill;
 
+  var width = 50;
+  var height = 50;
+  let byteSize = width * height * 4;
+  var pointer = module.alloc( byteSize );
+  var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
+
+  console.log("pointer: "+pointer);
+  console.log("before set");
+  console.log(buffer);
+
+  module.set_buffer(pointer);
+  console.log("after set");
+  console.log(buffer);
+
+  module.dealloc(pointer);
+
+
   console.log(module);
   var canvas = document.getElementById('screen');
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
 
-    width = 50;
-    height = 50;
-    let byteSize = width * height * 4;
-    buffer = module.alloc( byteSize );
+    var pointer = module.alloc( byteSize );
+    var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
     console.log("allocated buffer: "+buffer);
 
     image = ctx.getImageData(0, 0, width, height)
     data = image.data
-    module.fill(buffer, width*height, 0);
+    module.fill(pointer, width*height, 0);
     console.log(image)
     console.log("filled buffer")
-    //var sub = module.HEAP8.subarray(buffer, buffer + width * height * 4);
-    //console.log(sub);
-    var usub = new Uint8Array(buffer);
+
+    var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
+    console.log("usub: ");
+
     console.log(usub);
     data.set(usub);
     console.log(data)
     console.log(image.data)
-    //data.set(module.HEAP8.subarray(0, width * height * 4));
     console.log("set image data")
 
     ctx.putImageData(image, 0, 0)
@@ -50,29 +112,30 @@ fetch("rust.wasm").then(response =>
       ctx2.scale(500/50, 500/50);
       ctx2.drawImage(canvas, 0, 0);
     }
+    console.log("enlarged")
     //free(buffer)
-  }
 
-  var start = null;
-  //const fill  = module.cwrap('fill2', 'void', ['number', 'number', 'number'])
-  function step(timestamp) {
-    var progress;
-    if (start === null) start = timestamp;
-    progress = timestamp - start;
-    if (progress > 100) {
-      module.fill(buffer, width*height, timestamp / 100);
-      var sub = module.HEAP8.subarray(buffer, buffer + width * height * 4);
-      var usub = new Uint8Array(sub);
-      data.set(usub);
-      ctx.putImageData(image, 0, 0)
-      ctx2.drawImage(canvas, 0, 0);
-      start = timestamp
+    var start = null;
+    function step(timestamp) {
+      var progress;
+      if (start === null) start = timestamp;
+      progress = timestamp - start;
+      if (progress > 100) {
+        console.log(timestamp);
+        module.fill(pointer, width*height, timestamp / 100);
+
+        var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
+        console.log(usub);
+        data.set(usub);
+
+        ctx.putImageData(image, 0, 0)
+        ctx2.drawImage(canvas, 0, 0);
+        start = timestamp
+      }
+      window.requestAnimationFrame(step);
     }
-    //if (progress < 2000) {
-    window.requestAnimationFrame(step);
-    //}
-  }
 
-  step();
+    window.requestAnimationFrame(step);
+  }
 
 });
