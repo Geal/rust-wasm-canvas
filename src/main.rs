@@ -70,7 +70,7 @@ pub fn fill(pointer: *mut u8, length: usize, time: f64) {
       let a = 128.0 + mycos(nb) * 128.0;
       sl[i] = a as u8;
 
-    } else if i %2 == 0 {
+    } else if i % 4 == 2 {
       let width = 500 - width;
       let len = ((height*height + width*width) as f64).sqrt();
       let nb = time  + len / 12.0;
