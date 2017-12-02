@@ -85,8 +85,9 @@ fetch("rust.wasm").then(response =>
     console.log(image)
     console.log("filled buffer")
 
-    var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
+    var usub = new Uint8ClampedArray(mod.exports.memory.buffer, pointer, byteSize);
     console.log("usub: ");
+    var img = new ImageData(usub, width, height);
 
     console.log(usub);
     data.set(usub);
@@ -105,10 +106,7 @@ fetch("rust.wasm").then(response =>
       if (progress > 100) {
         module.fill(pointer, width*height, timestamp);
 
-        var usub = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
-        data.set(usub);
-
-        ctx.putImageData(image, 0, 0)
+        ctx.putImageData(img, 0, 0)
         start = timestamp
       }
       window.requestAnimationFrame(step);
